@@ -2,7 +2,7 @@
 # Copyright 2018 Carlos Dauden <carlos.dauden@tecnativa.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import api, models
+from odoo import api, models, fields
 
 
 class AccountRegisterPayments(models.TransientModel):
@@ -14,7 +14,10 @@ class AccountRegisterPayments(models.TransientModel):
         for payment in payments:
             if not self.date_due:
                 invoices = payment.reconciled_invoice_ids
-                max_date = max(invoices.mapped("invoice_date_due"))
+                invoice_dates_due = invoices.mapped("invoice_date_due")
+                if not invoice_dates_due:
+                    invoice_dates_due = [fields.Datetime.now()]
+                max_date = max(invoice_dates_due)
                 payment.promissory_note = self.promissory_note
                 payment.date_due = max_date
             else:
